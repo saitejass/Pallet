@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    text-align: center;
+}
+
+#container {
+    margin: 20px auto;
+    position: relative;
+    border: 2px solid black;
+    display: inline-block;
+}
+
+.draggable {
+    position: absolute;
+    background-color: red;
+    cursor: grab;
+    user-select: none;
+    transition: background-color 0.3s ease;
+}
+
+.draggable:hover {
+    background-color: orange;
+}

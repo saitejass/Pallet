@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D palletization </title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>2D palletization</h1>
+    <div>
+        <h3>Pallet Size</h3>
+        <label for="big-box-width">Width:</label>
+        <input type="number" id="big-box-width" placeholder="Enter width">
+        <label for="big-box-height">Length:</label>
+        <input type="number" id="big-box-height" placeholder="Enter Length">
+    </div>
+    <div>
+        <h3>Box Dimensions</h3>
+        <label for="small-box-width">Width:</label>
+        <input type="number" id="small-box-width" placeholder="Enter width">
+        <label for="small-box-height">Length:</label>
+        <input type="number" id="small-box-height" placeholder="Enter Length">
+    </div>
+    <div>
+        <h3>Number of Boxes</h3>
+        <label for="num-small-boxes">Count:</label>
+        <input type="number" id="num-small-boxes" placeholder="Enter number of boxes">
+    </div>
+    <button id="generate-boxes"> palletize </button>
+    <div id="container"></div>
+
+    <p id="coordinates">Coordinates: Hover or drag a box to see its position</p>
+
+    <script src="script.js"></script>
+</body>
+</html>
