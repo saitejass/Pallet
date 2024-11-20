@@ -18,37 +18,45 @@ document.addEventListener("DOMContentLoaded", () => {
         container.style.height = `${bigBoxHeight}px`;
         container.innerHTML = ""; // Clear existing boxes
 
-        // Generate the boxes ensuring no overlap
-        for (let i = 0; i < numBoxes; i++) {
-            const box = document.createElement("div");
-            box.className = "draggable";
-            box.style.width = `${smallBoxWidth}px`;
-            box.style.height = `${smallBoxHeight}px`;
+        // Arranging the small boxes in a grid pattern
+        const boxesPerRow = Math.floor(bigBoxWidth / smallBoxWidth);
+        const boxesPerCol = Math.floor(bigBoxHeight / smallBoxHeight);
 
-            let position;
-            do {
-                const x = Math.random() * (bigBoxWidth - smallBoxWidth);
-                const y = Math.random() * (bigBoxHeight - smallBoxHeight);
-                position = { x, y };
-            } while (isOverlapping(position, placedBoxes, smallBoxWidth, smallBoxHeight));
+        let boxCount = 0; // To keep track of the number of boxes added
 
-            box.style.left = `${position.x}px`;
-            box.style.top = `${position.y}px`;
+        for (let i = 0; i < boxesPerCol; i++) {
+            for (let j = 0; j < boxesPerRow; j++) {
+                if (boxCount >= numBoxes) break;
 
-            placedBoxes.push({ ...position, width: smallBoxWidth, height: smallBoxHeight, element: box });
+                const box = document.createElement("div");
+                box.className = "draggable";
+                box.style.width = `${smallBoxWidth}px`;
+                box.style.height = `${smallBoxHeight}px`;
 
-            const coordDisplay = document.createElement("span");
-            coordDisplay.className = "coord-display";
-            coordDisplay.style.display = "none";
-            box.appendChild(coordDisplay);
+                const x = j * smallBoxWidth;
+                const y = i * smallBoxHeight;
 
-            box.addEventListener("mousedown", () => {
-                currentBox = box;
-                updateCoordinates(currentBox);
-                coordDisplay.style.display = "block";
-            });
+                // Add the box at calculated position
+                box.style.left = `${x}px`;
+                box.style.top = `${y}px`;
 
-            container.appendChild(box);
+                placedBoxes.push({ x, y, width: smallBoxWidth, height: smallBoxHeight, element: box });
+
+                const coordDisplay = document.createElement("span");
+                coordDisplay.className = "coord-display";
+                coordDisplay.style.display = "none";
+                box.appendChild(coordDisplay);
+
+                box.addEventListener("mousedown", () => {
+                    currentBox = box;
+                    updateCoordinates(currentBox);
+                    coordDisplay.style.display = "block";
+                });
+
+                container.appendChild(box);
+                boxCount++;
+            }
+            if (boxCount >= numBoxes) break;
         }
 
         // Add drag functionality
@@ -103,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
             coordDisplay.textContent = `(${x}, ${y})`;
         }
 
-        // Check if a box is overlapping with any placed box
+        // Check if a box is overlapping with any placed box (when placing)
         function isOverlapping(pos, boxes, width, height) {
             return boxes.some(box => {
                 return (
@@ -115,10 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Check if a box is colliding with any other box during drag
+        // Check if a box is colliding with any other box during drag (prevent overlap)
         function isColliding(pos, boxes, width, height, currentBox) {
             return boxes.some(box => {
-                if (box.element === currentBox) return false; // Ignore self
+                if (box.element === currentBox) return false; // Ignore self (the box being dragged)
                 return (
                     pos.x < box.x + box.width &&
                     pos.x + width > box.x &&
