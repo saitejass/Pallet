@@ -1,24 +1,115 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1e3c72, #2a5298); /* Gradient background */
+    color: #fff;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+h1 {
+    margin-top: 20px;
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+form {
+    margin: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+form label {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+form input {
+    margin: 5px 10px;
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+form button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #45a049;
 }
 
 #container {
-    margin: 20px auto;
     position: relative;
-    border: 2px solid black;
+    border: 2px solid rgba(255, 255, 255, 0.7);
     display: inline-block;
+    margin-top: 20px;
+
+    /* Big box background */
+    background-image: url('pallet.jpg');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 }
 
 .draggable {
     position: absolute;
-    background-color: red;
+
+    /* Small box background */
+    background-image: url('box.jpg');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* Additional styles for aesthetics */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     cursor: grab;
     user-select: none;
-    transition: background-color 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .draggable:hover {
-    background-color: orange;
+    transform: scale(1.1); /* Enlarge slightly on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+#coordinates {
+    margin: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    font-size: 1rem;
+    display: inline-block;
+}
+.coord-display {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 5px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    pointer-events: none; /* Avoid interfering with dragging */
 }
