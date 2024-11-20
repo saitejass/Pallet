@@ -1,118 +1,131 @@
-document.getElementById('generate-boxes').addEventListener('click', function () {
-    const container = document.getElementById('container');
-    const bigBoxWidth = parseInt(document.getElementById('big-box-width').value);
-    const bigBoxHeight = parseInt(document.getElementById('big-box-height').value);
-    const smallBoxWidth = parseInt(document.getElementById('small-box-width').value);
-    const smallBoxHeight = parseInt(document.getElementById('small-box-height').value);
-    const numSmallBoxes = parseInt(document.getElementById('num-small-boxes').value);
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("box-form");
+    const container = document.getElementById("container");
 
-    if (
-        isNaN(bigBoxWidth) || isNaN(bigBoxHeight) ||
-        isNaN(smallBoxWidth) || isNaN(smallBoxHeight) ||
-        isNaN(numSmallBoxes) ||
-        bigBoxWidth < smallBoxWidth || bigBoxHeight < smallBoxHeight
-    ) {
-        alert('Please enter valid dimensions and number of small boxes.');
-        return;
-    }
+    let currentBox = null; // Track the currently selected box
+    const placedBoxes = []; // To track the positions of all placed small boxes
 
-    // Check if the boxes can fit
-    const boxesPerRow = Math.floor(bigBoxWidth / smallBoxWidth);
-    const boxesPerColumn = Math.floor(bigBoxHeight / smallBoxHeight);
-    const maxBoxes = boxesPerRow * boxesPerColumn;
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
 
-    if (numSmallBoxes > maxBoxes) {
-        alert(`Cannot fit ${numSmallBoxes} small boxes in the big box. Maximum possible: ${maxBoxes}`);
-        return;
-    }
+        const bigBoxWidth = parseInt(document.getElementById("big-box-width").value, 10);
+        const bigBoxHeight = parseInt(document.getElementById("big-box-height").value, 10);
+        const smallBoxWidth = parseInt(document.getElementById("small-box-width").value, 10);
+        const smallBoxHeight = parseInt(document.getElementById("small-box-height").value, 10);
+        const numBoxes = parseInt(document.getElementById("num-small-boxes").value, 10);
 
-    // Clear previous boxes
-    container.innerHTML = '';
-    container.style.width = bigBoxWidth + 'px';
-    container.style.height = bigBoxHeight + 'px';
+        container.style.width = `${bigBoxWidth}px`;
+        container.style.height = `${bigBoxHeight}px`;
+        container.innerHTML = ""; // Clear existing boxes
 
-    // Generate and arrange small boxes
-    let boxIndex = 0;
-    for (let row = 0; row < boxesPerColumn; row++) {
-        for (let col = 0; col < boxesPerRow; col++) {
-            if (boxIndex >= numSmallBoxes) break;
+        // Generate the boxes ensuring no overlap
+        for (let i = 0; i < numBoxes; i++) {
+            const box = document.createElement("div");
+            box.className = "draggable";
+            box.style.width = `${smallBoxWidth}px`;
+            box.style.height = `${smallBoxHeight}px`;
 
-            // Create a small box
-            const smallBox = document.createElement('div');
-            smallBox.className = 'draggable';
-            smallBox.style.width = smallBoxWidth + 'px';
-            smallBox.style.height = smallBoxHeight + 'px';
-            smallBox.style.left = col * smallBoxWidth + 'px';
-            smallBox.style.top = row * smallBoxHeight + 'px';
+            let position;
+            do {
+                const x = Math.random() * (bigBoxWidth - smallBoxWidth);
+                const y = Math.random() * (bigBoxHeight - smallBoxHeight);
+                position = { x, y };
+            } while (isOverlapping(position, placedBoxes, smallBoxWidth, smallBoxHeight));
 
-            // Enable dragging with collision detection
-            enableDraggingWithCollision(smallBox, bigBoxWidth, bigBoxHeight, smallBoxWidth, smallBoxHeight);
+            box.style.left = `${position.x}px`;
+            box.style.top = `${position.y}px`;
 
-            container.appendChild(smallBox);
-            boxIndex++;
-        }
-    }
-});
+            placedBoxes.push({ ...position, width: smallBoxWidth, height: smallBoxHeight, element: box });
 
-function enableDraggingWithCollision(element, bigBoxWidth, bigBoxHeight, smallBoxWidth, smallBoxHeight) {
-    let offsetX, offsetY;
+            const coordDisplay = document.createElement("span");
+            coordDisplay.className = "coord-display";
+            coordDisplay.style.display = "none";
+            box.appendChild(coordDisplay);
 
-    const coordinatesDisplay = document.getElementById('coordinates');
-
-    element.addEventListener('mousedown', (e) => {
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-        element.style.cursor = 'grabbing';
-
-        function move(e) {
-            const containerRect = element.parentElement.getBoundingClientRect();
-            const otherBoxes = Array.from(document.querySelectorAll('.draggable')).filter(box => box !== element);
-
-            // Restrict movement within the big box
-            let left = e.clientX - containerRect.left - offsetX;
-            let top = e.clientY - containerRect.top - offsetY;
-
-            if (left < 0) left = 0;
-            if (top < 0) top = 0;
-            if (left + smallBoxWidth > bigBoxWidth) {
-                left = bigBoxWidth - smallBoxWidth;
-            }
-            if (top + smallBoxHeight > bigBoxHeight) {
-                top = bigBoxHeight - smallBoxHeight;
-            }
-
-            // Check for collisions
-            const collision = otherBoxes.some(box => {
-                const boxRect = box.getBoundingClientRect();
-                const newLeft = containerRect.left + left;
-                const newTop = containerRect.top + top;
-
-                return !(
-                    newLeft + smallBoxWidth <= boxRect.left || // Right edge does not overlap
-                    newLeft >= boxRect.right || // Left edge does not overlap
-                    newTop + smallBoxHeight <= boxRect.top || // Bottom edge does not overlap
-                    newTop >= boxRect.bottom // Top edge does not overlap
-                );
+            box.addEventListener("mousedown", () => {
+                currentBox = box;
+                updateCoordinates(currentBox);
+                coordDisplay.style.display = "block";
             });
 
-            if (!collision) {
-                element.style.left = left + 'px';
-                element.style.top = top + 'px';
+            container.appendChild(box);
+        }
 
-                // Update coordinates
-                const x = left + smallBoxWidth / 2;
-                const y = bigBoxHeight - (top + smallBoxHeight / 2);
-                coordinatesDisplay.textContent = `Coordinates: (x: ${x.toFixed(1)}, y: ${y.toFixed(1)})`;
+        // Add drag functionality
+        container.addEventListener("mousemove", (event) => {
+            if (currentBox) {
+                const containerRect = container.getBoundingClientRect();
+                const boxWidth = parseInt(currentBox.style.width, 10);
+                const boxHeight = parseInt(currentBox.style.height, 10);
+
+                let newX = event.clientX - containerRect.left - boxWidth / 2;
+                let newY = event.clientY - containerRect.top - boxHeight / 2;
+
+                // Boundary check
+                newX = Math.max(0, Math.min(newX, container.offsetWidth - boxWidth));
+                newY = Math.max(0, Math.min(newY, container.offsetHeight - boxHeight));
+
+                // Check for collision with other boxes
+                if (!isColliding({ x: newX, y: newY }, placedBoxes, boxWidth, boxHeight, currentBox)) {
+                    currentBox.style.left = `${newX}px`;
+                    currentBox.style.top = `${newY}px`;
+                    updateCoordinates(currentBox);
+                }
             }
+        });
+
+        // Stop dragging
+        container.addEventListener("mouseup", () => {
+            if (currentBox) {
+                const coordDisplay = currentBox.querySelector(".coord-display");
+                coordDisplay.style.display = "none";
+                currentBox = null;
+            }
+        });
+
+        // Stop dragging when mouse leaves container
+        container.addEventListener("mouseleave", () => {
+            if (currentBox) {
+                const coordDisplay = currentBox.querySelector(".coord-display");
+                coordDisplay.style.display = "none";
+                currentBox = null;
+            }
+        });
+
+        function updateCoordinates(box) {
+            const boxRect = box.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const x = Math.round(boxRect.left - containerRect.left);
+            const y = Math.round(boxRect.top - containerRect.top);
+
+            const coordDisplay = box.querySelector(".coord-display");
+            coordDisplay.textContent = `(${x}, ${y})`;
         }
 
-        function stopMove() {
-            document.removeEventListener('mousemove', move);
-            document.removeEventListener('mouseup', stopMove);
-            element.style.cursor = 'grab';
+        // Check if a box is overlapping with any placed box
+        function isOverlapping(pos, boxes, width, height) {
+            return boxes.some(box => {
+                return (
+                    pos.x < box.x + box.width &&
+                    pos.x + width > box.x &&
+                    pos.y < box.y + box.height &&
+                    pos.y + height > box.y
+                );
+            });
         }
 
-        document.addEventListener('mousemove', move);
-        document.addEventListener('mouseup', stopMove);
+        // Check if a box is colliding with any other box during drag
+        function isColliding(pos, boxes, width, height, currentBox) {
+            return boxes.some(box => {
+                if (box.element === currentBox) return false; // Ignore self
+                return (
+                    pos.x < box.x + box.width &&
+                    pos.x + width > box.x &&
+                    pos.y < box.y + box.height &&
+                    pos.y + height > box.y
+                );
+            });
+        }
     });
-}
+});
